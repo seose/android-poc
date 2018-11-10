@@ -5,11 +5,40 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(),View.OnClickListener {
+
+/**
+ * ref
+ *
+ * https://developer.android.com/guide/topics/manifest/activity-element?hl=ko
+ * https://github.com/OpenLauncherTeam/openlauncher
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        btA.setOnClickListener { v ->
+            AAA()
+        }
+
+        btB.setOnClickListener { v ->
+            BBB()
+        }
+
+        btC.setOnClickListener { v ->
+            CCC()
+        }
+
+        btD.setOnClickListener { v ->
+            DDD()
+        }
 
 
     }
@@ -32,14 +61,5 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
 
 
 
-
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            btA.id -> AAA()
-            btB.id -> BBB()
-            btC.id -> CCC()
-            btD.id -> DDD()
-        }
-    }
 
 }
