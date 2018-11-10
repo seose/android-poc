@@ -5,13 +5,27 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(),View.OnClickListener {
+class MainActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+		btA.setOnClickListener { v ->
+            AAA()
+        }
 
+        btB.setOnClickListener { v ->
+            BBB()
+        }
+
+        btC.setOnClickListener { v ->
+            CCC()
+        }
+
+        btD.setOnClickListener { v ->
+            DDD()
+        }
     }
 
     fun AAA() {
@@ -29,17 +43,4 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
     fun DDD() {
 
     }
-
-
-
-
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            btA.id -> AAA()
-            btB.id -> BBB()
-            btC.id -> CCC()
-            btD.id -> DDD()
-        }
-    }
-
 }
