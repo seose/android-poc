@@ -5,4 +5,9 @@
 ## poc list
 #### get-another-apps-special-list 
  - https://github.com/seose/android-poc/tree/get-another-apps-special-list
- - content provider, crud data from another app 
+ - use content provider, CRUD to data from another app 
+
+#### turn-off-screen
+ - https://github.com/seose/android-poc/tree/turn-off-screen
+ - turn off screen by programmatically
+ 
