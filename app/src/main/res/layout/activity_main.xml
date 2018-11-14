@@ -9,13 +9,13 @@
 
     <Button
         android:id="@+id/btA"
-        android:text="button A"
+        android:text="button A - Setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/btB"
-        android:text="button B"
+        android:text="button B - View"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
