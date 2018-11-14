@@ -19,4 +19,6 @@
  - https://github.com/seose/android-poc/tree/specific-home-launcher
  - minimal condition of specific home launcher
  
- 
+#### set-view-options
+ - https://github.com/seose/android-poc/tree/set-view-options
+ - set textview's font size, position X,Y
