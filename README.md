@@ -26,3 +26,7 @@
 #### launch-app-from-url
  - https://github.com/seose/android-poc/tree/launch-app-from-url
  - app launch from url with param
+
+#### drawer-with-folder 
+ - https://github.com/seose/android-poc/tree/drawer-with-folder
+ - launch app from app's drawer with folder
