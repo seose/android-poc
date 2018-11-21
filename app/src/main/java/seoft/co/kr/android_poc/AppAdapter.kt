@@ -7,7 +7,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 
-class AppAdapter(var apps : List<AppDTO>,var cb: (appDto:AppDTO)->Unit) : RecyclerView.Adapter<AppAdapter.ViewHolder>(){
+class AppAdapter(apps_ : List<AppDTO>,page:Int ,var cb: (appDto:AppDTO)->Unit) : RecyclerView.Adapter<AppAdapter.ViewHolder>(){
+
+    var apps = ArrayList<AppDTO>()
+
+    init {
+        var stt = page * DrawerActivity.ITEM_GRID_NUM
+        var end = stt + DrawerActivity.ITEM_GRID_NUM
+        while((stt < apps_.size) && (stt < end) )
+            apps.add(apps_[stt++])
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppAdapter.ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_app,parent,false)
         return ViewHolder(view, cb)

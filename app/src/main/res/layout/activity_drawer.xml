@@ -4,14 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".DrawerActivity">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rvApps"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vpDrawer"
         android:layout_width="match_parent"
+        android:layout_gravity="center"
         android:layout_height="match_parent">
 
-    </android.support.v7.widget.RecyclerView>
+    </android.support.v4.view.ViewPager>
 
 
 </LinearLayout>
