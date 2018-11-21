@@ -22,3 +22,7 @@
 #### set-view-options
  - https://github.com/seose/android-poc/tree/set-view-options
  - set textview's font size, position X,Y
+
+#### launch-app-from-url
+ - https://github.com/seose/android-poc/tree/launch-app-from-url
+ - app launch from url with param
