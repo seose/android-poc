@@ -2,12 +2,18 @@ package seoft.co.kr.android_poc
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
+import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.util.DisplayMetrics
 import android.view.View
@@ -18,6 +24,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.showDialog
 import seoft.co.kr.android_poc.util.toast
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 /*
@@ -32,6 +40,10 @@ https://github.com/ArthurHub/Android-Image-Cropper
  */
 
 class MainActivity : AppCompatActivity(){
+
+    companion object {
+        val SP_IMG_PATH = "SP_IMG_PATH"
+    }
 
     val TAG = "MainActivity#$#"
 
@@ -96,6 +108,11 @@ class MainActivity : AppCompatActivity(){
     }
 
     fun DDD() {
+        val path = loadPath()
+
+        val intent = Intent(this,ImageActivity::class.java)
+        intent.putExtra(SP_IMG_PATH,path)
+        startActivity(intent)
 
    }
 
@@ -142,20 +159,63 @@ class MainActivity : AppCompatActivity(){
 
     // CCC START
 
+    // 적당한 set과 save,load 방법 ref :
+    // http://sharp57dev.tistory.com/22
+    // https://stackoverflow.com/questions/48046106/difference-between-setimagebitmap-and-setimageuri
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val imageUri = CropImage.getPickImageResultUri(this, data)
             CropImage.activity(imageUri)
-                    .setAspectRatio(deviceWidth,deviceHeight)
+                    .setAspectRatio(deviceWidth, deviceHeight)
                     .start(this)
         } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val result = CropImage.getActivityResult(data)
             ivBackground.setImageURI(result.uri)
+
+            val bitImg = MediaStore.Images.Media.getBitmap(this.contentResolver,result.uri)
+
+            val path = saveBitmap(bitImg)
+
+            savePath(path)
+
         }
     }
 
+
+    // load function in ImageActivity
+    fun saveBitmap(bitmap: Bitmap) : String{
+        val cw = ContextWrapper(applicationContext)
+        val dir = cw.getDir("imageDir", Context.MODE_PRIVATE)
+        val myPath = File(dir, "bg.png")
+
+        val fos = FileOutputStream(myPath)
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,fos)
+
+        return dir.absolutePath
+    }
+
+
+    fun savePath(path:String){
+        val sp = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor = sp.edit()
+        editor.putString("SP_IMG_PATH",path)
+        editor.apply()
+    }
+
     // CCC END
+
+    // DDD START
+
+    fun loadPath():String{
+        val sp = PreferenceManager.getDefaultSharedPreferences(this)
+        return sp.getString("SP_IMG_PATH","")
+    }
+
+    // DDD END
+
+
 
 }
