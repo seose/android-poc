@@ -30,3 +30,9 @@
 #### drawer-with-folder 
  - https://github.com/seose/android-poc/tree/drawer-with-folder
  - launch app from app's drawer with folder
+
+#### drawer-with-folder 
+ - https://github.com/seose/android-poc/tree/bring-image-in-app
+ - set background image contain statusbar, bottom virtual buttons
+ - get screen size, crop image using that size, convert bitmap, save path
+ - load path & adjust to imageview
