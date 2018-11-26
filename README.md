@@ -36,3 +36,12 @@
  - set background image contain statusbar, bottom virtual buttons
  - get screen size, crop image using that size, convert bitmap, save path
  - load path & adjust to imageview
+
+#### pick-color-convert-to-bitmap
+ - https://github.com/seose/android-poc/tree/pick-color-convert-to-bitmap
+ - choose color and bring color value
+ - create bitmap object has 1^px size from color value and adjust imageview
+ 
+ 
+ 
+ 
