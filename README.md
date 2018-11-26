@@ -1,2 +1,2 @@
 # pick-color-convert-to-bitmap
-for rq
+for LQ
