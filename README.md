@@ -43,5 +43,12 @@
  - create bitmap object has 1^px size from color value and adjust imageview
  
  
+#### content-provider-with-room
+ - https://github.com/seose/android-poc/tree/content-provider-with-room
+ - adjust content provider & room to callee
+ - caller bring data from callee 
+ 
+ 
+ 
  
  
