@@ -21,6 +21,10 @@ class MainActivity : AppCompatActivity(){
         setContentView(R.layout.activity_main)
 
         regist()
+
+        btA.setOnClickListener { _ ->
+            startActivity(Intent(applicationContext,SubActivity::class.java))
+        }
     }
 
     fun regist() {
