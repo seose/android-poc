@@ -42,13 +42,16 @@
  - choose color and bring color value
  - create bitmap object has 1^px size from color value and adjust imageview
  
- 
 #### content-provider-with-room
  - https://github.com/seose/android-poc/tree/content-provider-with-room
  - adjust content provider & room to callee
  - caller bring data from callee 
  
+#### turn-off-screen-without-lock
+ - https://github.com/seose/android-poc/tree/turn-off-screen-without-lock
+ - force turn off screen without lock
  
- 
- 
- 
+#### event-from-(un)install-app
+ - https://github.com/seose/android-poc/tree/event-from-un-install-app
+ - use content provider, Get event that (un)install application
+
