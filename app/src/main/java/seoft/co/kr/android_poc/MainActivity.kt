@@ -1,6 +1,7 @@
 package seoft.co.kr.android_poc
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
@@ -41,7 +42,8 @@ class MainActivity : AppCompatActivity(){
     fun reqPermission(){
         val settingsCanWrite = Settings.System.canWrite(this)
         if (!settingsCanWrite) {
-            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
+            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS).
+                    apply { data = Uri.parse("package:seoft.co.kr.android_poc") }
             startActivity(intent)
         } else {
             val alertDialog = AlertDialog.Builder(this@MainActivity).create()
