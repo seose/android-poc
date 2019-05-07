@@ -17,7 +17,6 @@ class TimingActivity : AppCompatActivity() {
         val TIME_BRD = "TIME_BRD"
         val TIMES = "TIMES"
 
-
         val CUR_TIME = "CUR_TIME"
         val END = "END"
     }
@@ -37,7 +36,11 @@ class TimingActivity : AppCompatActivity() {
                     putIntegerArrayListExtra(TIMES,times)
                     }
 
-        startService(svcIntent)
+
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+//            startForegroundService(svcIntent)
+//        else
+            startService(svcIntent)
 
 
 
@@ -54,7 +57,7 @@ class TimingActivity : AppCompatActivity() {
         unregisterReceiver(timeBrd)
     }
 
-    val timeBrd = object : BroadcastReceiver(){
+    private val timeBrd = object : BroadcastReceiver(){
         override fun onReceive(context: Context, intent: Intent) {
 
             if(intent.getStringExtra(CUR_TIME) == END) {
