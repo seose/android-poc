@@ -7,8 +7,30 @@
     tools:context=".TimingActivity">
 
     <TextView
+        android:id="@+id/tvRound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="round" />
+
+    <TextView
         android:id="@+id/tvTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:text="time" />
+
+    <Button
+        android:id="@+id/btRestart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="btRestart" />
+    <Button
+        android:id="@+id/btPause"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="pause" />
+    <Button
+        android:id="@+id/btStop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="stop" />
 </LinearLayout>

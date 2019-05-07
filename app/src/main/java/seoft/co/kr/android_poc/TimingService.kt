@@ -5,13 +5,11 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
-import seoft.co.kr.android_poc.TimingActivity.Companion.CUR_TIME
-import seoft.co.kr.android_poc.TimingActivity.Companion.END
 import seoft.co.kr.android_poc.TimingActivity.Companion.TIMES
-import seoft.co.kr.android_poc.TimingActivity.Companion.TIME_BRD
 import seoft.co.kr.android_poc.util.App
 import seoft.co.kr.android_poc.util.i
 import java.util.concurrent.TimeUnit
@@ -22,37 +20,31 @@ class TimingService : Service() {
     val TAG = "TimingService#$#"
 
     val notiId = 111
-
     lateinit var times : ArrayList<Int>
-
-//    lateinit var cdt : CountDownTimer
     lateinit var cdt : PreciseCountdown
-
     var arrayCnt = 0
-
     var isRunning = false
 
-    override fun onBind(intent: Intent): IBinder? {
-
-        return null
+    val binder = TimingServiceBinder()
+    inner class TimingServiceBinder : Binder() {
+        internal val service: TimingService
+            get() = this@TimingService
     }
+    override fun onBind(intent: Intent): IBinder? { return binder }
 
     override fun onCreate() {
         super.onCreate()
         isRunning = false
-
-
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        if(isRunning) {
-            return super.onStartCommand(intent, flags, startId)
-//            cancelTimerStatus()
-        }
+        if(isRunning) return super.onStartCommand(intent, flags, startId)
+        if(intent == null) return super.onStartCommand(intent, flags, startId)
 
         times = intent.getIntegerArrayListExtra(TIMES)
-        startTimer(0)
+        startTimer(/*arrayCnt*/)
+
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
@@ -65,30 +57,53 @@ class TimingService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    fun stop(){
+        "stop".i(TAG)
+        cancelTimerStatus()
+    }
+
+    fun pause(){
+        "pause".i(TAG)
+
+    }
+
+    fun restart(){
+        "restart".i(TAG)
+        startTimer()
+    }
+
+
+
     /**
      * startTimer is called repeat on PreciseCountdown ( recursive )
      */
-    fun startTimer(idx:Int){
-        cdt = object : PreciseCountdown(x1000L(times[idx]),1000L) {
+    fun startTimer(/*idx:Int*/){
+
+        if(isRunning) return
+
+        cdt = object : PreciseCountdown(x1000L(times[arrayCnt]),1000L) {
             override fun onFinished() {
+
+                isRunning= false
                 arrayCnt++
                 if (arrayCnt == times.size) {
                     cancelTimerStatus()
                     "sendBroadcast     END".i(TAG)
-                    sendBroadcast(Intent(TIME_BRD).apply { putExtra(CUR_TIME, END) })
-
+                    sendBroadcast(Intent(CMD_BRD.END))
                     stopSelf()
 
                 } else {
                     cdt.cancel()
-                    startTimer(arrayCnt)
+                    startTimer(/*arrayCnt*/)
                 }
             }
 
             override fun onTick(millisUntilFinished: Long) {
                 val time = longToString(millisUntilFinished)
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
-                sendBroadcast(Intent(TIME_BRD).apply { putExtra(CUR_TIME,time) })
+
+                sendBroadcast(Intent(CMD_BRD.TIME).apply { putExtra(CMD_BRD.MSG, time) })
+                sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
             }
         }
         isRunning = true
@@ -138,6 +153,12 @@ class TimingService : Service() {
                 .setOngoing(true).build()
 
         return notification
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        cancelTimerStatus()
     }
 
 }

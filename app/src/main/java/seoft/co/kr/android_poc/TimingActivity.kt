@@ -14,14 +14,14 @@ class TimingActivity : AppCompatActivity() {
     val TAG = "TimingActivity#$#"
 
     companion object {
-        val TIME_BRD = "TIME_BRD"
         val TIMES = "TIMES"
 
-        val CUR_TIME = "CUR_TIME"
-        val END = "END"
     }
 
     lateinit var times : ArrayList<Int>
+    lateinit var timeBrd : BroadcastReceiver
+    lateinit var svcIntent : Intent
+    lateinit var timingServiceInterface : TimingServiceInterface
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,43 +31,60 @@ class TimingActivity : AppCompatActivity() {
 
         times.toString().i()
 
-        val svcIntent = Intent(this,TimingService::class.java)
+        svcIntent = Intent(this,TimingService::class.java)
                 .apply {
                     putIntegerArrayListExtra(TIMES,times)
                     }
 
+        startService(svcIntent)
 
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-//            startForegroundService(svcIntent)
-//        else
-            startService(svcIntent)
+        timingServiceInterface = TimingServiceInterface(this)
+
+        initListener()
 
 
+    }
 
+    fun initListener(){
+
+        btRestart.setOnClickListener {  v ->
+            timingServiceInterface.restart()
+        }
+
+        btPause.setOnClickListener {  v ->
+            timingServiceInterface.pause()
+        }
+
+        btStop.setOnClickListener {  v ->
+            timingServiceInterface.stop()
+        }
+
+        timeBrd = object : BroadcastReceiver(){
+            override fun onReceive(context: Context, intent: Intent) {
+
+                when(intent.action){
+                    CMD_BRD.TIME -> tvTime.text = intent.getStringExtra(CMD_BRD.MSG)
+                    CMD_BRD.ROUND -> tvRound.text = intent.getStringExtra(CMD_BRD.MSG)
+                    CMD_BRD.END -> tvTime.text = "종료 브로드케스팅 받음"
+                }
+            }
+        }
 
     }
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(timeBrd, IntentFilter(TIME_BRD))
+        registerReceiver(timeBrd, IntentFilter().apply {
+            addAction(CMD_BRD.ROUND)
+            addAction(CMD_BRD.TIME)
+            addAction(CMD_BRD.END)
+        })
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(timeBrd)
-    }
-
-    private val timeBrd = object : BroadcastReceiver(){
-        override fun onReceive(context: Context, intent: Intent) {
-
-            if(intent.getStringExtra(CUR_TIME) == END) {
-                tvTime.text = "종료 브로드케스팅 받음"
-            } else {
-                val curTime = intent.getStringExtra(CUR_TIME)
-                tvTime.text = curTime
-            }
-
-        }
+        timingServiceInterface.unbindService()
     }
 
 
