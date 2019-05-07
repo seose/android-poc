@@ -18,6 +18,11 @@ fun String.toast( duration: Int = Toast.LENGTH_LONG): Toast {
     return Toast.makeText(App.get, this, duration).apply { show()  }
 }
 
+
+fun Any.i(tag:String = "#$#") {
+    Log.i(tag,this.toString())
+}
+
 // dialog
 fun AlertDialog.Builder.showDialog(title:String? = null, message:String? = null,
                                    postiveBtText:String? = null, negativeBtText:String? = null,
