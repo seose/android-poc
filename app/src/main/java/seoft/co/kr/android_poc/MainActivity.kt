@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity(){
 
     fun AAA() {
 
-        val times = arrayListOf(3,5,7)
+        val times = arrayListOf(3,4,5)
 
         startActivity(Intent(applicationContext,TimingActivity::class.java).apply{
             putIntegerArrayListExtra(TimingActivity.TIMES,times)

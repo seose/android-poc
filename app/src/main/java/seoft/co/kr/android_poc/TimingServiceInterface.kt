@@ -28,7 +28,9 @@ class TimingServiceInterface(val ctx: Context) {
 
     fun unbindService(){
 
-        ctx.unbindService(connection)
+        connection?.let {
+            ctx.unbindService(connection)
+        }
 
     }
 

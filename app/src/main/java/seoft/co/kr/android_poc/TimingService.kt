@@ -12,7 +12,8 @@ import android.support.v4.app.NotificationCompat
 import seoft.co.kr.android_poc.TimingActivity.Companion.TIMES
 import seoft.co.kr.android_poc.util.App
 import seoft.co.kr.android_poc.util.i
-import java.util.concurrent.TimeUnit
+import seoft.co.kr.android_poc.util.toTimeStr
+import seoft.co.kr.android_poc.util.x1000L
 
 
 class TimingService : Service() {
@@ -24,6 +25,8 @@ class TimingService : Service() {
     lateinit var cdt : PreciseCountdown
     var arrayCnt = 0
     var isRunning = false
+    var isPause = false
+    var pauseTimer = 0L
 
     val binder = TimingServiceBinder()
     inner class TimingServiceBinder : Binder() {
@@ -40,34 +43,44 @@ class TimingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         if(isRunning) return super.onStartCommand(intent, flags, startId)
+        if(isPause) {
+            val time = pauseTimer.toTimeStr()
+            broadcastTimeAndRound(time)
+            return super.onStartCommand(intent, flags, startId)
+        }
         if(intent == null) return super.onStartCommand(intent, flags, startId)
 
         times = intent.getIntegerArrayListExtra(TIMES)
-        startTimer(/*arrayCnt*/)
+        restart()
 
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
         }
 
-        val noti = getNotification()
-
-        startForeground(notiId , noti)
-
         return super.onStartCommand(intent, flags, startId)
     }
 
+    /**
+     * service stop (not self stop) is only TimingActivity pass this method, broadcast
+     */
     fun stop(){
         "stop".i(TAG)
         cancelTimerStatus()
+        sendBroadcast(Intent(CMD_BRD.STOP))
+        isPause = false
     }
 
     fun pause(){
         "pause".i(TAG)
-
+        cancelTimerStatus(false)
+        isPause = true
     }
 
     fun restart(){
+
+        if(!isRunning && !isPause) startForeground(notiId , getNotification())
+
         "restart".i(TAG)
         startTimer()
     }
@@ -77,58 +90,63 @@ class TimingService : Service() {
     /**
      * startTimer is called repeat on PreciseCountdown ( recursive )
      */
-    fun startTimer(/*idx:Int*/){
+    fun startTimer(){
 
         if(isRunning) return
 
-        cdt = object : PreciseCountdown(x1000L(times[arrayCnt]),1000L) {
-            override fun onFinished() {
+        val insertTimer : Long = if(isPause) {
+            isPause = false
+            pauseTimer
+        } else times[arrayCnt].x1000L()
 
-                isRunning= false
+        cdt = object : PreciseCountdown(insertTimer,1000L) {
+            override fun onFinished() {
+                isRunning = false
                 arrayCnt++
                 if (arrayCnt == times.size) {
                     cancelTimerStatus()
                     "sendBroadcast     END".i(TAG)
                     sendBroadcast(Intent(CMD_BRD.END))
                     stopSelf()
-
                 } else {
                     cdt.cancel()
-                    startTimer(/*arrayCnt*/)
+                    startTimer()
                 }
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                val time = longToString(millisUntilFinished)
+                pauseTimer = millisUntilFinished
+                val time = millisUntilFinished.toTimeStr()
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
-
-                sendBroadcast(Intent(CMD_BRD.TIME).apply { putExtra(CMD_BRD.MSG, time) })
-                sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
+                broadcastTimeAndRound(time)
             }
         }
         isRunning = true
         cdt.start()
     }
 
-
-    fun longToString(time:Long) :String {
-        return String.format("%02d:%02d:%02d",
-                TimeUnit.MILLISECONDS.toHours(time),
-                TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)),
-                TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)))
+    fun broadcastTimeAndRound(timeStr:String){
+        sendBroadcast(Intent(CMD_BRD.TIME).apply { putExtra(CMD_BRD.MSG, timeStr) })
+        sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
     }
+
+//    fun longToString(time:Long) :String {
+//        return String.format("%02d:%02d:%02d",
+//                TimeUnit.MILLISECONDS.toHours(time),
+//                TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)),
+//                TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)))
+//    }
 
     /**
-     * for easy convenient convert, milliseconds is long, need to multiply 1000
+     * param [initArrCnt] is called with false value from only pause()
      */
-    fun x1000L(i :Int):Long{
-        return i*1000L
-    }
-
-    fun cancelTimerStatus(){
+    fun cancelTimerStatus(initArrCnt : Boolean = true){
         cdt.cancel()
         isRunning = false
-        arrayCnt = 0
+        if(initArrCnt) {
+            stopForeground(notiId)
+            arrayCnt = 0
+        }
     }
 
     /**
