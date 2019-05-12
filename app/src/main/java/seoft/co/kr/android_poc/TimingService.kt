@@ -1,16 +1,11 @@
 package seoft.co.kr.android_poc
 
-import android.R
-import android.app.Notification
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.support.v4.app.NotificationCompat
 import seoft.co.kr.android_poc.TimingActivity.Companion.TIMES
-import seoft.co.kr.android_poc.util.App
 import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.toTimeStr
 import seoft.co.kr.android_poc.util.x1000L
@@ -20,15 +15,20 @@ class TimingService : Service() {
 
     val TAG = "TimingService#$#"
 
-    val notiId = 111
     lateinit var times : ArrayList<Int>
     lateinit var cdt : PreciseCountdown
+
+    val timingNotification :TimingNotication by lazy {
+        TimingNotication(this,times)
+    }
+
     var arrayCnt = 0
     var isRunning = false
     var isPause = false
     var pauseTimer = 0L
 
     val binder = TimingServiceBinder()
+
     inner class TimingServiceBinder : Binder() {
         internal val service: TimingService
             get() = this@TimingService
@@ -79,7 +79,7 @@ class TimingService : Service() {
 
     fun restart(){
 
-        if(!isRunning && !isPause) startForeground(notiId , getNotification())
+        if(!isRunning && !isPause) timingNotification.showNotification()
 
         "restart".i(TAG)
         startTimer()
@@ -118,7 +118,9 @@ class TimingService : Service() {
                 pauseTimer = millisUntilFinished
                 val time = millisUntilFinished.toTimeStr()
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
+
                 broadcastTimeAndRound(time)
+                timingNotification.update(time)
             }
         }
         isRunning = true
@@ -130,13 +132,6 @@ class TimingService : Service() {
         sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
     }
 
-//    fun longToString(time:Long) :String {
-//        return String.format("%02d:%02d:%02d",
-//                TimeUnit.MILLISECONDS.toHours(time),
-//                TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)),
-//                TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)))
-//    }
-
     /**
      * param [initArrCnt] is called with false value from only pause()
      */
@@ -144,7 +139,8 @@ class TimingService : Service() {
         cdt.cancel()
         isRunning = false
         if(initArrCnt) {
-            stopForeground(notiId)
+//            stopForeground(notiId)
+            timingNotification.removeNotification()
             arrayCnt = 0
         }
     }
@@ -154,24 +150,24 @@ class TimingService : Service() {
      *
      * cur status : pendingIntent flags 0 AND TimingActivity's launchMode is singleTask
      */
-    fun getNotification() : Notification{
-        val notificationIntent = Intent(this, TimingActivity::class.java).apply {
-            putIntegerArrayListExtra(TimingActivity.TIMES,times)
-        }
-        notificationIntent.action = "Action2"
-        val pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0 )
-
-        val notification = NotificationCompat.Builder(this, App.CHANNEL_ID)
-                .setContentTitle("...")
-                .setTicker("... ")
-                .setContentText("...")
-                .setSmallIcon( R.drawable.ic_delete)
-                .setContentIntent(pendingIntent)
-                .setOngoing(true).build()
-
-        return notification
-    }
+//    fun getNotification() : Notification{
+//        val notificationIntent = Intent(this, TimingActivity::class.java).apply {
+//            putIntegerArrayListExtra(TimingActivity.TIMES,times)
+//        }
+//        notificationIntent.action = "Action2"
+//        val pendingIntent = PendingIntent.getActivity(this, 0,
+//                notificationIntent, 0 )
+//
+//        val notification = NotificationCompat.Builder(this, App.CHANNEL_ID)
+//                .setContentTitle("...")
+//                .setTicker("... ")
+//                .setContentText("...")
+//                .setSmallIcon( R.drawable.ic_delete)
+//                .setContentIntent(pendingIntent)
+//                .setOngoing(true).build()
+//
+//        return notification
+//    }
 
     override fun onDestroy() {
         super.onDestroy()
