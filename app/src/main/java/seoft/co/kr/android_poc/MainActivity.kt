@@ -1,11 +1,12 @@
 package seoft.co.kr.android_poc
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
+import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(){
+
+    lateinit var gyro:Gyro
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +30,17 @@ class MainActivity : AppCompatActivity(){
     }
 
     fun AAA() {
+        gyro = Gyro(this)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        gyro.callWhenOnResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        gyro.callWhenOnPause()
     }
 
     fun BBB() {
