@@ -18,7 +18,15 @@
         <service
             android:name=".TimingService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true" >
+
+            <intent-filter>
+                <action android:name="RESTART"/>
+                <action android:name="PAUSE"/>
+                <action android:name="SOUND_OFF"/>
+                <action android:name="STOP"/>
+            </intent-filter>
+        </service>
 
         <activity android:name=".TimingActivity"
             android:launchMode="singleTask"

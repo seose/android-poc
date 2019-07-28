@@ -11,6 +11,16 @@ import android.widget.RemoteViews
 import seoft.co.kr.android_poc.util.App
 import seoft.co.kr.android_poc.util.i
 
+/**
+ * LOGIC :
+ *
+ * 1. show notification from Service after started it
+ * 2. updating views every a sec ( if running timer )
+ *
+ * Last. hide notification when call [cancelTimerStatus] funtion from service
+ *
+ */
+
 class TimingNotication(val timingService: TimingService, val times: ArrayList<Int>) {
 
     val TAG = "TimingNotication"
@@ -32,7 +42,7 @@ class TimingNotication(val timingService: TimingService, val times: ArrayList<In
     }
 
     fun showNotification() {
-        "showNotification".i(TAG)
+//        "showNotification".i(TAG)
 
         if (!isForeground) {
             val notificationIntent = Intent(timingService, TimingActivity::class.java).apply {
@@ -97,10 +107,12 @@ class TimingNotication(val timingService: TimingService, val times: ArrayList<In
         val soundOffPendingIntent = PendingIntent.getService(timingService, 0, Intent(CMD_SERVICE.SOUND_OFF), 0)
         val playPendingIntent = PendingIntent.getService(timingService, 0, Intent(CMD_SERVICE.RESTART), 0)
         val pausePendingIntent = PendingIntent.getService(timingService, 0, Intent(CMD_SERVICE.PAUSE), 0)
+        val stopPendingIntent = PendingIntent.getService(timingService, 0, Intent(CMD_SERVICE.STOP), 0)
 
         remoteViews.setOnClickPendingIntent(R.id.notiIvCtrlPlay, playPendingIntent)
         remoteViews.setOnClickPendingIntent(R.id.notiIvCtrlPause, pausePendingIntent)
         remoteViews.setOnClickPendingIntent(R.id.notiIvCtrlSoundOff, soundOffPendingIntent)
+        remoteViews.setOnClickPendingIntent(R.id.notiIvCtrlClose, stopPendingIntent)
 
         return remoteViews
     }

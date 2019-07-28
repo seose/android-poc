@@ -9,6 +9,16 @@ import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.toTimeStr
 import seoft.co.kr.android_poc.util.x1000L
 
+/**
+ * LOGIC :
+ *
+ * 1. start service from TimingAct after readying
+ * 2. start timer & show notification when bring CMD_SERVICE.START_WITH_TIMERS cmd from TimingAct
+ * 3. get commands when running timer & Adjust command and send command & value to ACT or NOTI
+ *
+ * Last. cancelTimerStatus() & isPause = false & timingService = null & sendBroadcast(Intent(CMD_BRD.STOP)) from STOP commands
+ *
+ */
 
 class TimingService : Service() {
 
@@ -28,7 +38,7 @@ class TimingService : Service() {
     var arrayCnt = 0
     var isRunning = false
     var isPause = false
-    var pauseTimer = 0L
+    var mTimer = 0L
 
     val binder = TimingServiceBinder()
 
@@ -50,6 +60,9 @@ class TimingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+        timingService = this
+        "onStartCommand".i()
+
         intent?.run {
 
             "action : $action".i()
@@ -60,9 +73,11 @@ class TimingService : Service() {
                     restart()
                 }
                 CMD_SERVICE.PAUSE -> {
+//                    "timerService ${timingService == null}".i()
                     pause()
                 }
                 CMD_SERVICE.RESTART -> {
+//                    "timerService ${timingService == null}".i()
                     restart()
                 }
                 CMD_SERVICE.STOP -> {
@@ -75,26 +90,6 @@ class TimingService : Service() {
 
 
         }
-//
-//        "onStartCommand".i()
-//
-//        if (isRunning) return super.onStartCommand(intent, flags, startId)
-//
-//        if (isPause) {
-//            val time = pauseTimer.toTimeStr()
-//            broadcastTimeAndRound(time)
-//            return super.onStartCommand(intent, flags, startId)
-//        }
-//
-//        if (intent == null) return super.onStartCommand(intent, flags, startId)
-//
-//        times = intent.getIntegerArrayListExtra(TIMES)
-//        restart()
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//
-//        }
-//
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -118,6 +113,11 @@ class TimingService : Service() {
         "pause".i(TAG)
         cancelTimerStatus(false)
         isPause = true
+        timingNotification.update(
+                "내타임셋",
+                mTimer.toTimeStr(),
+                arrayCnt.toString(),
+                NotifiactionButtonType.PLAY)
     }
 
     fun restart() {
@@ -126,6 +126,11 @@ class TimingService : Service() {
 
         "restart".i(TAG)
         startTimer()
+        timingNotification.update(
+                "내타임셋",
+                mTimer.toTimeStr(),
+                arrayCnt.toString(),
+                NotifiactionButtonType.PAUSE)
     }
 
 
@@ -138,7 +143,7 @@ class TimingService : Service() {
 
         val insertTimer: Long = if (isPause) {
             isPause = false
-            pauseTimer
+            mTimer
         } else times[arrayCnt].x1000L()
 
         cdt = object : PreciseCountdown(insertTimer, 1000L) {
@@ -157,7 +162,7 @@ class TimingService : Service() {
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                pauseTimer = millisUntilFinished
+                mTimer = millisUntilFinished
                 val time = millisUntilFinished.toTimeStr()
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
 
@@ -178,7 +183,7 @@ class TimingService : Service() {
      * call when rejoin activity after out activity
      */
     fun updateActViewNow() {
-        broadcastTimeAndRound(pauseTimer.toTimeStr())
+        broadcastTimeAndRound(mTimer.toTimeStr())
     }
 
     fun broadcastTimeAndRound(timeStr: String) {
@@ -198,30 +203,6 @@ class TimingService : Service() {
             arrayCnt = 0
         }
     }
-
-    /**
-     * temp noticification
-     *
-     * cur status : pendingIntent flags 0 AND TimingActivity's launchMode is singleTask
-     */
-//    fun getNotification() : Notification{
-//        val notificationIntent = Intent(this, TimingActivity::class.java).apply {
-//            putIntegerArrayListExtra(TimingActivity.TIMES,times)
-//        }
-//        notificationIntent.action = "Action2"
-//        val pendingIntent = PendingIntent.getActivity(this, 0,
-//                notificationIntent, 0 )
-//
-//        val notification = NotificationCompat.Builder(this, App.CHANNEL_ID)
-//                .setContentTitle("...")
-//                .setTicker("... ")
-//                .setContentText("...")
-//                .setSmallIcon( R.drawable.ic_delete)
-//                .setContentIntent(pendingIntent)
-//                .setOngoing(true).build()
-//
-//        return notification
-//    }
 
     override fun onDestroy() {
         super.onDestroy()

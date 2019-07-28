@@ -9,71 +9,72 @@
         android:id="@+id/notiTvTimeSetName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_marginLeft="32dp"
         android:layout_marginTop="8dp"
         android:text="내 타임셋"
         android:textColor="@android:color/black"
-        android:textSize="14dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true" />
+        android:textSize="14dp" />
 
     <TextView
         android:id="@+id/notiTvTimer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/notiTvTimeSetName"
+        android:layout_alignParentLeft="true"
         android:layout_marginStart="32dp"
         android:layout_marginBottom="8dp"
         android:text="00:00:28"
-        android:layout_below="@id/notiTvTimeSetName"
         android:textColor="@android:color/black"
-        android:textSize="20dp"
-        android:layout_alignParentLeft="true" />
+        android:textSize="20dp" />
 
     <TextView
-        android:gravity="center"
-        android:layout_alignTop="@id/notiTvTimer"
-        android:layout_alignBottom="@id/notiTvTimer"
         android:id="@+id/notiTvRepeat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="abcd"
-        android:textColor="@android:color/black"
-        android:layout_toRightOf="@id/notiIvTimerIcon"
-        />
-
-    <ImageView
         android:layout_alignTop="@id/notiTvTimer"
-        android:id="@+id/notiIvTimerIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_toRightOf="@id/notiTvTimer"
-        android:src="@drawable/ic_tmp"
+        android:layout_alignBottom="@id/notiTvTimer"
+        android:layout_marginStart="16dp"
+        android:layout_toRightOf="@id/notiIvTimerIcon"
+        android:gravity="center"
+        android:text="abcd"
         android:textColor="@android:color/black" />
 
     <ImageView
+        android:id="@+id/notiIvTimerIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/notiTvTimer"
+        android:layout_marginLeft="16dp"
+        android:layout_toRightOf="@id/notiTvTimer"
+        android:src="@drawable/ic_tmp" />
+
+    <ImageButton
         android:id="@+id/notiIvCtrlPlay"
-        android:layout_toLeftOf="@id/notiIvCtrlClose"
-        android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginRight="16dp"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:background="@null"
         android:src="@drawable/ic_play" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/notiIvCtrlPause"
-        android:layout_toLeftOf="@id/notiIvCtrlClose"
-        android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginRight="16dp"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:background="@null"
         android:src="@drawable/ic_pause_black_24dp" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/notiIvCtrlSoundOff"
-        android:layout_toLeftOf="@id/notiIvCtrlClose"
-        android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginRight="16dp"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:background="@null"
         android:src="@drawable/ic_sound_off" />
 
     <ImageView
@@ -83,6 +84,7 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginRight="32dp"
+        android:background="@null"
         android:src="@drawable/ic_close_black_24dp" />
 
 </RelativeLayout>

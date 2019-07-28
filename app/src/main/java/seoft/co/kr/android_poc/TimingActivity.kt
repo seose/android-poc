@@ -12,6 +12,18 @@ import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.toTimeStr
 import seoft.co.kr.android_poc.util.x1000L
 
+/**
+ * LOGIC :
+ *
+ * 1. mainAct -> TimingAct
+ * 2. regist BRC & play readying(or refresh view) in Resume
+ * 3. wait readying use postDelayed
+ * 4. run service with noti
+ * 5. bring data from service
+ *
+ * Last. unregist BRC & unbinding service & (if not playing stop service + finish activity)
+ *
+ */
 
 class TimingActivity : AppCompatActivity() {
 
@@ -20,7 +32,6 @@ class TimingActivity : AppCompatActivity() {
     companion object {
         val TIMES = "TIMES"
         val READY_SEC = "READY_SEC"
-
     }
 
     lateinit var times: ArrayList<Int>
@@ -62,13 +73,19 @@ class TimingActivity : AppCompatActivity() {
     fun initListener() {
 
         btRestart.setOnClickListener {
+//            "timingServiceInterface ${timingServiceInterface == null}".i()
+//            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.restart() }
         }
         btPause.setOnClickListener {
+//            "timingServiceInterface ${timingServiceInterface == null}".i()
+//            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.pause() }
         }
         btStop.setOnClickListener {
-            TimingService.timingService.let { timingServiceInterface?.stop() }
+//            "timingServiceInterface ${timingServiceInterface == null}".i()
+//            "TimingService.timingService ${TimingService.timingService == null}".i()
+            TimingService.timingService?.let { timingServiceInterface?.stop() }
         }
 
         timeBrd = object : BroadcastReceiver() {
@@ -77,10 +94,14 @@ class TimingActivity : AppCompatActivity() {
                 when (intent.action) {
                     CMD_BRD.TIME -> tvTime.text = intent.getStringExtra(CMD_BRD.MSG)
                     CMD_BRD.ROUND -> tvRound.text = intent.getStringExtra(CMD_BRD.MSG)
-                    CMD_BRD.END -> tvTime.text = "종료 브로드케스팅 받음"
+                    CMD_BRD.END -> {
+                        tvTime.text = "종료 브로드케스팅 받음"
+                        finish()
+                    }
                     CMD_BRD.STOP -> {
                         tvTime.text = times[0].x1000L().toTimeStr()
                         tvRound.text = "0"
+                        if(TimingService.timingService != null) TimingService.timingService = null
                         finish()
                     }
                 }
@@ -115,7 +136,7 @@ class TimingActivity : AppCompatActivity() {
 
         timingServiceInterface = TimingServiceInterface(this)
 
-        "onResume TimingService.timingService is null : ${TimingService.timingService == null}".i()
+//        "onResume TimingService.timingService is null : ${TimingService.timingService == null}".i()
 
         TimingService.timingService?.let {
             Handler().postDelayed({ timingServiceInterface?.updateActViewNow() }, 50) // wait for registReceiver
@@ -130,7 +151,6 @@ class TimingActivity : AppCompatActivity() {
         unregisterReceiver(timeBrd)
 
         // !isPause AND !isRunning = status of stop
-//        if (!timingServiceInterface.service!!.isPause && !timingServiceInterface.service!!.isRunning) {
         if (TimingService.timingService != null
                 && !timingServiceInterface?.service!!.isPause
                 && !timingServiceInterface?.service!!.isRunning) {
