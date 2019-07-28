@@ -7,6 +7,12 @@
     tools:context=".TimingActivity">
 
     <TextView
+        android:id="@+id/tvReady"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ready" />
+
+    <TextView
         android:id="@+id/tvRound"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

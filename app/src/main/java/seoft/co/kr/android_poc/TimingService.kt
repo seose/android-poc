@@ -3,7 +3,6 @@ package seoft.co.kr.android_poc
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import seoft.co.kr.android_poc.TimingActivity.Companion.TIMES
 import seoft.co.kr.android_poc.util.i
@@ -15,11 +14,15 @@ class TimingService : Service() {
 
     val TAG = "TimingService#$#"
 
-    lateinit var times : ArrayList<Int>
-    lateinit var cdt : PreciseCountdown
+    companion object {
+        var timingService: TimingService? = null // check service is alive
+    }
 
-    val timingNotification :TimingNotication by lazy {
-        TimingNotication(this,times)
+    lateinit var times: ArrayList<Int>
+    lateinit var cdt: PreciseCountdown
+
+    val timingNotification: TimingNotication by lazy {
+        TimingNotication(this, times)
     }
 
     var arrayCnt = 0
@@ -33,73 +36,112 @@ class TimingService : Service() {
         internal val service: TimingService
             get() = this@TimingService
     }
-    override fun onBind(intent: Intent): IBinder? { return binder }
+
+    override fun onBind(intent: Intent): IBinder? {
+        return binder
+    }
 
     override fun onCreate() {
         super.onCreate()
+        timingService = this
         isRunning = false
     }
 
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        if(isRunning) return super.onStartCommand(intent, flags, startId)
-        if(isPause) {
-            val time = pauseTimer.toTimeStr()
-            broadcastTimeAndRound(time)
-            return super.onStartCommand(intent, flags, startId)
+        intent?.run {
+
+            "action : $action".i()
+
+            when (action) {
+                CMD_SERVICE.START_WITH_TIMERS -> {
+                    times = intent.getIntegerArrayListExtra(TIMES)
+                    restart()
+                }
+                CMD_SERVICE.PAUSE -> {
+                    pause()
+                }
+                CMD_SERVICE.RESTART -> {
+                    restart()
+                }
+                CMD_SERVICE.STOP -> {
+                    stop()
+                }
+                CMD_SERVICE.SOUND_OFF -> {
+                    soundOff()
+                }
+            }
+
+
         }
-        if(intent == null) return super.onStartCommand(intent, flags, startId)
-
-        times = intent.getIntegerArrayListExtra(TIMES)
-        restart()
-
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-
-        }
-
+//
+//        "onStartCommand".i()
+//
+//        if (isRunning) return super.onStartCommand(intent, flags, startId)
+//
+//        if (isPause) {
+//            val time = pauseTimer.toTimeStr()
+//            broadcastTimeAndRound(time)
+//            return super.onStartCommand(intent, flags, startId)
+//        }
+//
+//        if (intent == null) return super.onStartCommand(intent, flags, startId)
+//
+//        times = intent.getIntegerArrayListExtra(TIMES)
+//        restart()
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//
+//        }
+//
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun soundOff(){
+
     }
 
     /**
      * service stop (not self stop) is only TimingActivity pass this method, broadcast
      */
-    fun stop(){
+    fun stop() {
         "stop".i(TAG)
         cancelTimerStatus()
-        sendBroadcast(Intent(CMD_BRD.STOP))
         isPause = false
+        timingService = null
+
+        sendBroadcast(Intent(CMD_BRD.STOP))
     }
 
-    fun pause(){
+    fun pause() {
         "pause".i(TAG)
         cancelTimerStatus(false)
         isPause = true
     }
 
-    fun restart(){
+    fun restart() {
 
-        if(!isRunning && !isPause) timingNotification.showNotification()
+        if (!isRunning && !isPause) timingNotification.showNotification()
 
         "restart".i(TAG)
         startTimer()
     }
 
 
-
     /**
      * startTimer is called repeat on PreciseCountdown ( recursive )
      */
-    fun startTimer(){
+    fun startTimer() {
 
-        if(isRunning) return
+        if (isRunning) return
 
-        val insertTimer : Long = if(isPause) {
+        val insertTimer: Long = if (isPause) {
             isPause = false
             pauseTimer
         } else times[arrayCnt].x1000L()
 
-        cdt = object : PreciseCountdown(insertTimer,1000L) {
+        cdt = object : PreciseCountdown(insertTimer, 1000L) {
             override fun onFinished() {
                 isRunning = false
                 arrayCnt++
@@ -120,14 +162,26 @@ class TimingService : Service() {
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
 
                 broadcastTimeAndRound(time)
-                timingNotification.update(time)
+                timingNotification.update(
+                        "내타임셋",
+                        time,
+                        arrayCnt.toString(),
+                        NotifiactionButtonType.PAUSE
+                )
             }
         }
         isRunning = true
         cdt.start()
     }
 
-    fun broadcastTimeAndRound(timeStr:String){
+    /**
+     * call when rejoin activity after out activity
+     */
+    fun updateActViewNow() {
+        broadcastTimeAndRound(pauseTimer.toTimeStr())
+    }
+
+    fun broadcastTimeAndRound(timeStr: String) {
         sendBroadcast(Intent(CMD_BRD.TIME).apply { putExtra(CMD_BRD.MSG, timeStr) })
         sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
     }
@@ -135,10 +189,10 @@ class TimingService : Service() {
     /**
      * param [initArrCnt] is called with false value from only pause()
      */
-    fun cancelTimerStatus(initArrCnt : Boolean = true){
+    fun cancelTimerStatus(initArrCnt: Boolean = true) {
         cdt.cancel()
         isRunning = false
-        if(initArrCnt) {
+        if (initArrCnt) {
 //            stopForeground(notiId)
             timingNotification.removeNotification()
             arrayCnt = 0
@@ -173,6 +227,7 @@ class TimingService : Service() {
         super.onDestroy()
 
         cancelTimerStatus()
+        timingService = null
     }
 
 }

@@ -31,9 +31,10 @@ class MainActivity : AppCompatActivity(){
     fun AAA() {
 
         val times = arrayListOf(3,4,5)
-
+        val readySec = 3
         startActivity(Intent(applicationContext,TimingActivity::class.java).apply{
             putIntegerArrayListExtra(TimingActivity.TIMES,times)
+            putExtra(TimingActivity.READY_SEC,readySec)
         })
 
 

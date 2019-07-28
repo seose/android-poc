@@ -35,6 +35,10 @@ class TimingServiceInterface(val ctx: Context) {
     }
 
 
+    fun updateActViewNow(){
+        service?.updateActViewNow()
+    }
+
     fun restart(){
         service?.restart()
     }

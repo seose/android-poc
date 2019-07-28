@@ -1,15 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="64dp"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <TextView
+        android:id="@+id/notiTvTimeSetName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:text="내 타임셋"
+        android:textColor="@android:color/black"
+        android:textSize="14dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" />
+
+    <TextView
+        android:id="@+id/notiTvTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="8dp"
+        android:text="00:00:28"
+        android:layout_below="@id/notiTvTimeSetName"
+        android:textColor="@android:color/black"
+        android:textSize="20dp"
+        android:layout_alignParentLeft="true" />
+
+    <TextView
+        android:gravity="center"
+        android:layout_alignTop="@id/notiTvTimer"
+        android:layout_alignBottom="@id/notiTvTimer"
+        android:id="@+id/notiTvRepeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:text="abcd"
         android:textColor="@android:color/black"
-        android:id="@+id/notiTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_toRightOf="@id/notiIvTimerIcon"
+        />
 
-</LinearLayout>
+    <ImageView
+        android:layout_alignTop="@id/notiTvTimer"
+        android:id="@+id/notiIvTimerIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_toRightOf="@id/notiTvTimer"
+        android:src="@drawable/ic_tmp"
+        android:textColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/notiIvCtrlPlay"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:layout_marginRight="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_play" />
+
+    <ImageView
+        android:id="@+id/notiIvCtrlPause"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:layout_marginRight="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_pause_black_24dp" />
+
+    <ImageView
+        android:id="@+id/notiIvCtrlSoundOff"
+        android:layout_toLeftOf="@id/notiIvCtrlClose"
+        android:layout_marginRight="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_sound_off" />
+
+    <ImageView
+        android:id="@+id/notiIvCtrlClose"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="32dp"
+        android:src="@drawable/ic_close_black_24dp" />
+
+</RelativeLayout>
