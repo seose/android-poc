@@ -61,4 +61,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="add 1minute" />
+
+    <LinearLayout
+        android:layout_width="match_parent" android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <Button android:id="@+id/bt1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bt1" />
+        <Button android:id="@+id/bt2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bt2" />
+        <Button android:id="@+id/bt3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bt3" />
+        <Button android:id="@+id/bt4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bt4" />
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -18,6 +18,14 @@ import seoft.co.kr.android_poc.util.x1000L
  *
  * Last. cancelTimerStatus() & isPause = false & timingService = null & sendBroadcast(Intent(CMD_BRD.STOP)) from STOP commands
  *
+ * 0812
+ * move :
+ *
+ * 1. bring command from activity with move pos
+ * 2. refresh arrayCnt to move pos
+ * 3. refresh mTimer(current count time set) from move pos, array
+ * 4. restart ( with noti, remain sec )
+ *
  */
 
 class TimingService : Service() {
@@ -133,7 +141,6 @@ class TimingService : Service() {
         val remainSecond = mTimer/1000 + sumSecondWithOutMTime
         sendBroadcast(Intent(CMD_BRD.REMAIN_SEC).apply { putExtra(CMD_BRD.MSG, remainSecond) })
 
-
         "restart".i(TAG)
         startTimer()
         timingNotification.update(
@@ -148,6 +155,14 @@ class TimingService : Service() {
         mTimer += 60000
         restart(StartType.RESTART)
     }
+
+    fun move(pos:Int){
+        arrayCnt = pos
+        pause()
+        mTimer = times[arrayCnt].x1000L() // set timer picked move
+        restart(StartType.RESTART)
+    }
+
 
     /**
      * startTimer is called repeat on PreciseCountdown ( recursive )

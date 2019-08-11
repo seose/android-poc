@@ -55,6 +55,10 @@ class TimingServiceInterface(val ctx: Context) {
         service?.addMin()
     }
 
+    fun move(pos:Int){
+        service?.move(pos)
+    }
+
 
 
 

@@ -27,14 +27,15 @@ import java.util.*
  *
  * 0812
  * all time : calculate in onCreate / save to allTimeSt(static) / load in onResume
+ *
  * end time :
  * A.
  * - calculate and load with readySec in onCreate
  * B.
  * - calculate only remain time in service's restart method
  * - load in broadcast callback when call BRD.REMAIN_SEC MSG
- *
  * save to endTimeStr
+ *
  *
  */
 
@@ -48,7 +49,7 @@ class TimingActivity : AppCompatActivity() {
 
         var endTimeStr = ""
         var allTimeStr = ""
-        var addingMin = 0
+        var addingMinute = 0
     }
 
     lateinit var times: ArrayList<Int>
@@ -129,38 +130,48 @@ class TimingActivity : AppCompatActivity() {
 
     fun initListener() {
 
+        // TODO : block push button before reading
         btRestart.setOnClickListener {
-//            "timingServiceInterface ${timingServiceInterface == null}".i()
-//            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.restart() }
-
         }
         btPause.setOnClickListener {
-//            "timingServiceInterface ${timingServiceInterface == null}".i()
-//            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.pause() }
         }
         btStop.setOnClickListener {
-//            "timingServiceInterface ${timingServiceInterface == null}".i()
-//            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.stop() }
         }
         btAdd.setOnClickListener {
             TimingService.timingService?.let { timingServiceInterface?.addMin() }
-            addingMin++
+            addingMinute++
             updateAddingView()
-
-//            endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.EXIST,60)
-//            updateEndingView()
+        }
+        bt1.setOnClickListener {
 
         }
+        bt2.setOnClickListener {
+            moveTimeBadge(0)
+        }
+        bt3.setOnClickListener {
+            moveTimeBadge(1)
+        }
+        bt4.setOnClickListener {
+            moveTimeBadge(2)
+        }
+    }
 
+    fun moveTimeBadge(pos:Int){
+        TimingService.timingService?.let { timingServiceInterface?.move(pos)}
+        addingMinute=0
+        updateAddingView()
     }
 
     /**
      * call updateAddingView, updateEndingView from onResume, pushed button
      */
-    fun updateAddingView(){ tvAdd.text = "+${addingMin}분" }
+    fun updateAddingView(){
+        // TODO if addingMinute == 0 -> invisible , else visible
+        tvAdd.text = "+${addingMinute}분"
+    }
     fun updateEndingView(){ tvEndTime.text = endTimeStr }
 
     fun readying(cnt: Int) {
