@@ -23,7 +23,18 @@ import java.util.*
  * 4. run service with noti
  * 5. bring data from service
  *
- * Last. unregist BRC & unbinding service & (if not playing stop service + finish activity)
+ * Last. unregist BRC & unbinding service & (if not playing stop service + finish activity) & stop self in service
+ *
+ * 0812
+ * all time : calculate in onCreate / save to allTimeSt(static) / load in onResume
+ * end time :
+ * A.
+ * - calculate and load with readySec in onCreate
+ * B.
+ * - calculate only remain time in service's restart method
+ * - load in broadcast callback when call BRD.REMAIN_SEC MSG
+ *
+ * save to endTimeStr
  *
  */
 
@@ -66,7 +77,7 @@ class TimingActivity : AppCompatActivity() {
 
         // set end time
         val allTime =  times.reduce { acc, i ->  acc+i }
-        if(endTimeStr.isEmpty()) endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.NEW,readySec + allTime)
+        if(endTimeStr.isEmpty()) endTimeStr = getEndTimeStringAfterSecond(readySec + allTime)
         if(allTimeStr.isEmpty()) allTimeStr = allTime.x1000L().toTimeStr() // need to [if] for call from notification when remove activity status
 
     }
@@ -95,7 +106,7 @@ class TimingActivity : AppCompatActivity() {
                     CMD_BRD.REMAIN_SEC -> {
                         val remainSecond = intent.getLongExtra(CMD_BRD.MSG,0)
                         "CMD_BRD.REMAIN_SEC : $remainSecond".i()
-                        endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.NEW,remainSecond.toInt())
+                        endTimeStr = getEndTimeStringAfterSecond(remainSecond.toInt())
                         updateEndingView()
                     }
                 }
@@ -139,8 +150,8 @@ class TimingActivity : AppCompatActivity() {
             addingMin++
             updateAddingView()
 
-            endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.EXIST,60)
-            updateEndingView()
+//            endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.EXIST,60)
+//            updateEndingView()
 
         }
 
@@ -204,26 +215,12 @@ class TimingActivity : AppCompatActivity() {
         timingServiceInterface?.unbindService()
     }
 
-    fun getEndTimeStringAfterSecond(updateEndTimeType:UpdateEndTimeType,sec:Int) :String {
+    fun getEndTimeStringAfterSecond(sec:Int) :String {
 
         val gCalendar = GregorianCalendar()
         format.calendar = gCalendar
-
-        if(updateEndTimeType == UpdateEndTimeType.NEW) {
-            gCalendar.add(Calendar.SECOND,sec)
-
-        } else if(updateEndTimeType == UpdateEndTimeType.EXIST) {
-            gCalendar.time = format.parse(endTimeStr)
-            gCalendar.add(Calendar.SECOND,sec)
-        }
-
-//        val endCalendar = GregorianCalendar()
+        gCalendar.add(Calendar.SECOND,sec)
         return format.format(gCalendar.time)
-    }
-
-    enum class UpdateEndTimeType{
-        NEW,
-        EXIST
     }
 
 }
