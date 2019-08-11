@@ -37,6 +37,7 @@ class TimingActivity : AppCompatActivity() {
 
         var endTimeStr = ""
         var allTimeStr = ""
+        var addingMin = 0
     }
 
     lateinit var times: ArrayList<Int>
@@ -45,6 +46,7 @@ class TimingActivity : AppCompatActivity() {
     lateinit var timeBrd: BroadcastReceiver
     lateinit var svcIntent: Intent
     var timingServiceInterface: TimingServiceInterface? = null
+    private val format = SimpleDateFormat("hh:mm a", Locale.US)
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -58,13 +60,47 @@ class TimingActivity : AppCompatActivity() {
 
         times = intent.getIntegerArrayListExtra(TIMES)
         readySec = intent.getIntExtra(READY_SEC, 5)
+
         initListener()
+        initBrd()
 
         // set end time
         val allTime =  times.reduce { acc, i ->  acc+i }
+        if(endTimeStr.isEmpty()) endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.NEW,readySec + allTime)
+        if(allTimeStr.isEmpty()) allTimeStr = allTime.x1000L().toTimeStr() // need to [if] for call from notification when remove activity status
 
-        endTimeStr = getEndTimeStringAfterSecond(readySec + allTime)
-        allTimeStr = allTime.x1000L().toTimeStr()
+    }
+
+    fun initBrd(){
+        timeBrd = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+
+                when (intent.action) {
+                    CMD_BRD.TIME -> tvTime.text = intent.getStringExtra(CMD_BRD.MSG)
+                    CMD_BRD.ROUND -> tvRound.text = intent.getStringExtra(CMD_BRD.MSG)
+                    CMD_BRD.END -> {
+                        tvTime.text = "종료 브로드케스팅 받음"
+                        endTimeStr = ""
+                        allTimeStr = ""
+                        finish()
+                    }
+                    CMD_BRD.STOP -> {
+                        tvTime.text = times[0].x1000L().toTimeStr()
+                        tvRound.text = "0"
+                        if(TimingService.timingService != null) TimingService.timingService = null
+                        endTimeStr = ""
+                        allTimeStr = ""
+                        finish()
+                    }
+                    CMD_BRD.REMAIN_SEC -> {
+                        val remainSecond = intent.getLongExtra(CMD_BRD.MSG,0)
+                        "CMD_BRD.REMAIN_SEC : $remainSecond".i()
+                        endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.NEW,remainSecond.toInt())
+                        updateEndingView()
+                    }
+                }
+            }
+        }
     }
 
 
@@ -86,6 +122,7 @@ class TimingActivity : AppCompatActivity() {
 //            "timingServiceInterface ${timingServiceInterface == null}".i()
 //            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.restart() }
+
         }
         btPause.setOnClickListener {
 //            "timingServiceInterface ${timingServiceInterface == null}".i()
@@ -98,32 +135,22 @@ class TimingActivity : AppCompatActivity() {
             TimingService.timingService?.let { timingServiceInterface?.stop() }
         }
         btAdd.setOnClickListener {
+            TimingService.timingService?.let { timingServiceInterface?.addMin() }
+            addingMin++
+            updateAddingView()
 
-        }
+            endTimeStr = getEndTimeStringAfterSecond(UpdateEndTimeType.EXIST,60)
+            updateEndingView()
 
-//        tvAllTime
-
-        timeBrd = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-
-                when (intent.action) {
-                    CMD_BRD.TIME -> tvTime.text = intent.getStringExtra(CMD_BRD.MSG)
-                    CMD_BRD.ROUND -> tvRound.text = intent.getStringExtra(CMD_BRD.MSG)
-                    CMD_BRD.END -> {
-                        tvTime.text = "종료 브로드케스팅 받음"
-                        finish()
-                    }
-                    CMD_BRD.STOP -> {
-                        tvTime.text = times[0].x1000L().toTimeStr()
-                        tvRound.text = "0"
-                        if(TimingService.timingService != null) TimingService.timingService = null
-                        finish()
-                    }
-                }
-            }
         }
 
     }
+
+    /**
+     * call updateAddingView, updateEndingView from onResume, pushed button
+     */
+    fun updateAddingView(){ tvAdd.text = "+${addingMin}분" }
+    fun updateEndingView(){ tvEndTime.text = endTimeStr }
 
     fun readying(cnt: Int) {
         tvReady.text = "$cnt"
@@ -145,6 +172,7 @@ class TimingActivity : AppCompatActivity() {
             addAction(CMD_BRD.TIME)
             addAction(CMD_BRD.END)
             addAction(CMD_BRD.STOP)
+            addAction(CMD_BRD.REMAIN_SEC)
         })
 
         canReady = true
@@ -159,8 +187,12 @@ class TimingActivity : AppCompatActivity() {
 
         } ?: readying(readySec - 1)
 
-        tvEndTime.text = endTimeStr
+
+        // init view
+
         tvAllTime.text = allTimeStr
+        updateEndingView()
+        updateAddingView()
 
     }
 
@@ -169,30 +201,29 @@ class TimingActivity : AppCompatActivity() {
         canReady = false
         unregisterReceiver(timeBrd)
 
-        // !isPause AND !isRunning = status of stop
-        // Dispose of stop self
-//        if (TimingService.timingService != null
-//                && !timingServiceInterface?.service!!.isPause
-//                && !timingServiceInterface?.service!!.isRunning) {
-//            stopService(svcIntent)
-//        }
-
         timingServiceInterface?.unbindService()
     }
 
-    fun getEndTimeStringAfterSecond(sec:Int) :String {
+    fun getEndTimeStringAfterSecond(updateEndTimeType:UpdateEndTimeType,sec:Int) :String {
 
-        val format = SimpleDateFormat("hh:mm a", Locale.US)
-        val endCalendar = GregorianCalendar()
+        val gCalendar = GregorianCalendar()
+        format.calendar = gCalendar
 
-        format.calendar = endCalendar
+        if(updateEndTimeType == UpdateEndTimeType.NEW) {
+            gCalendar.add(Calendar.SECOND,sec)
 
-        endCalendar.add(Calendar.SECOND,sec)
+        } else if(updateEndTimeType == UpdateEndTimeType.EXIST) {
+            gCalendar.time = format.parse(endTimeStr)
+            gCalendar.add(Calendar.SECOND,sec)
+        }
 
-        val endTimeString = format.format(endCalendar.time)
-        return endTimeString
+//        val endCalendar = GregorianCalendar()
+        return format.format(gCalendar.time)
+    }
 
-
+    enum class UpdateEndTimeType{
+        NEW,
+        EXIST
     }
 
 }

@@ -40,7 +40,7 @@ class TimingServiceInterface(val ctx: Context) {
     }
 
     fun restart(){
-        service?.restart()
+        service?.restart(TimingService.StartType.RESTART)
     }
 
     fun pause(){
@@ -51,6 +51,9 @@ class TimingServiceInterface(val ctx: Context) {
         service?.stop()
     }
 
+    fun addMin(){
+        service?.addMin()
+    }
 
 
 

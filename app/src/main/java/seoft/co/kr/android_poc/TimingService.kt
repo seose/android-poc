@@ -38,7 +38,7 @@ class TimingService : Service() {
     var arrayCnt = 0
     var isRunning = false
     var isPause = false
-    var mTimer = 0L
+    var mTimer = 0L // use when restart from pause status
 
     val binder = TimingServiceBinder()
 
@@ -70,7 +70,7 @@ class TimingService : Service() {
             when (action) {
                 CMD_SERVICE.START_WITH_TIMERS -> {
                     times = intent.getIntegerArrayListExtra(TIMES)
-                    restart()
+                    restart(StartType.INIT)
                 }
                 CMD_SERVICE.PAUSE -> {
 //                    "timerService ${timingService == null}".i()
@@ -78,7 +78,7 @@ class TimingService : Service() {
                 }
                 CMD_SERVICE.RESTART -> {
 //                    "timerService ${timingService == null}".i()
-                    restart()
+                    restart(StartType.RESTART)
                 }
                 CMD_SERVICE.STOP -> {
                     stop()
@@ -102,7 +102,7 @@ class TimingService : Service() {
      */
     fun stop() {
         "stop".i(TAG)
-        cancelTimerStatus()
+        cancelTimerStatus(CancleType.INIT_ARR_CNT)
         isPause = false
         stopSelf()
         timingService = null
@@ -112,7 +112,7 @@ class TimingService : Service() {
 
     fun pause() {
         "pause".i(TAG)
-        cancelTimerStatus(false)
+        cancelTimerStatus(CancleType.NONE)
         isPause = true
         timingNotification.update(
                 "내타임셋",
@@ -121,9 +121,18 @@ class TimingService : Service() {
                 NotifiactionButtonType.PLAY)
     }
 
-    fun restart() {
+    fun restart(startType: StartType) {
 
         if (!isRunning && !isPause) timingNotification.showNotification()
+
+        if(startType == StartType.INIT)
+            mTimer = times[0].x1000L()
+
+        val sumSecondWithOutMTime = times.drop(arrayCnt).reduce { cur, nxt -> cur + nxt }
+
+        val remainSecond = mTimer/1000 + sumSecondWithOutMTime
+        sendBroadcast(Intent(CMD_BRD.REMAIN_SEC).apply { putExtra(CMD_BRD.MSG, remainSecond) })
+
 
         "restart".i(TAG)
         startTimer()
@@ -134,6 +143,11 @@ class TimingService : Service() {
                 NotifiactionButtonType.PAUSE)
     }
 
+    fun addMin(){
+        pause()
+        mTimer += 60000
+        restart(StartType.RESTART)
+    }
 
     /**
      * startTimer is called repeat on PreciseCountdown ( recursive )
@@ -148,11 +162,12 @@ class TimingService : Service() {
         } else times[arrayCnt].x1000L()
 
         cdt = object : PreciseCountdown(insertTimer, 1000L) {
+
             override fun onFinished() {
                 isRunning = false
                 arrayCnt++
                 if (arrayCnt == times.size) {
-                    cancelTimerStatus()
+                    cancelTimerStatus(CancleType.INIT_ARR_CNT)
                     "sendBroadcast     END".i(TAG)
                     sendBroadcast(Intent(CMD_BRD.END))
                     stopSelf()
@@ -176,8 +191,10 @@ class TimingService : Service() {
                 )
             }
         }
+
         isRunning = true
         cdt.start()
+
     }
 
     /**
@@ -195,10 +212,10 @@ class TimingService : Service() {
     /**
      * param [initArrCnt] is called with false value from only pause()
      */
-    fun cancelTimerStatus(initArrCnt: Boolean = true) {
+    fun cancelTimerStatus(/*initArrCnt: Boolean = true*/ cancleType : CancleType) {
         cdt.cancel()
         isRunning = false
-        if (initArrCnt) {
+        if (cancleType == CancleType.INIT_ARR_CNT) {
 //            stopForeground(notiId)
             timingNotification.removeNotification()
             arrayCnt = 0
@@ -208,8 +225,17 @@ class TimingService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-        cancelTimerStatus()
+        cancelTimerStatus(CancleType.INIT_ARR_CNT)
         timingService = null
     }
 
+    enum class CancleType{
+        NONE,
+        INIT_ARR_CNT
+    }
+
+    enum class StartType{
+        INIT,
+        RESTART
+    }
 }

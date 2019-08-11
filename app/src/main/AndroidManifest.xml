@@ -25,6 +25,9 @@
                 <action android:name="PAUSE"/>
                 <action android:name="SOUND_OFF"/>
                 <action android:name="STOP"/>
+                <action android:name="REMAIN_SEC"/>
+                <action android:name="ROUND"/>
+
             </intent-filter>
         </service>
 

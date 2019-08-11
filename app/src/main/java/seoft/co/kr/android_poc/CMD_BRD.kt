@@ -7,5 +7,6 @@ object CMD_BRD {
     const val END = "END"
     const val STOP = "STOP"
     const val MSG = "MSG"
+    const val REMAIN_SEC = "REMAIN_SEC"
 
 }
