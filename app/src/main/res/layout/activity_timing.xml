@@ -24,6 +24,18 @@
         android:layout_height="wrap_content"
         android:text="time" />
 
+    <TextView
+        android:id="@+id/tvAllTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="allTime" />
+
+    <TextView
+        android:id="@+id/tvEndTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="endTime" />
+
     <Button
         android:id="@+id/btRestart"
         android:layout_width="match_parent"
@@ -39,4 +51,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="stop" />
+    <Button
+        android:id="@+id/btAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add 1minute" />
 </LinearLayout>

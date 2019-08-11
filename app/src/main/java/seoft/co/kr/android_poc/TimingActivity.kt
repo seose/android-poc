@@ -11,6 +11,8 @@ import kotlinx.android.synthetic.main.activity_timing.*
 import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.toTimeStr
 import seoft.co.kr.android_poc.util.x1000L
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * LOGIC :
@@ -32,6 +34,9 @@ class TimingActivity : AppCompatActivity() {
     companion object {
         val TIMES = "TIMES"
         val READY_SEC = "READY_SEC"
+
+        var endTimeStr = ""
+        var allTimeStr = ""
     }
 
     lateinit var times: ArrayList<Int>
@@ -55,6 +60,11 @@ class TimingActivity : AppCompatActivity() {
         readySec = intent.getIntExtra(READY_SEC, 5)
         initListener()
 
+        // set end time
+        val allTime =  times.reduce { acc, i ->  acc+i }
+
+        endTimeStr = getEndTimeStringAfterSecond(readySec + allTime)
+        allTimeStr = allTime.x1000L().toTimeStr()
     }
 
 
@@ -87,6 +97,11 @@ class TimingActivity : AppCompatActivity() {
 //            "TimingService.timingService ${TimingService.timingService == null}".i()
             TimingService.timingService?.let { timingServiceInterface?.stop() }
         }
+        btAdd.setOnClickListener {
+
+        }
+
+//        tvAllTime
 
         timeBrd = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -139,9 +154,13 @@ class TimingActivity : AppCompatActivity() {
 //        "onResume TimingService.timingService is null : ${TimingService.timingService == null}".i()
 
         TimingService.timingService?.let {
+
             Handler().postDelayed({ timingServiceInterface?.updateActViewNow() }, 50) // wait for registReceiver
+
         } ?: readying(readySec - 1)
 
+        tvEndTime.text = endTimeStr
+        tvAllTime.text = allTimeStr
 
     }
 
@@ -151,14 +170,29 @@ class TimingActivity : AppCompatActivity() {
         unregisterReceiver(timeBrd)
 
         // !isPause AND !isRunning = status of stop
-        if (TimingService.timingService != null
-                && !timingServiceInterface?.service!!.isPause
-                && !timingServiceInterface?.service!!.isRunning) {
-            stopService(svcIntent)
-        }
+        // Dispose of stop self
+//        if (TimingService.timingService != null
+//                && !timingServiceInterface?.service!!.isPause
+//                && !timingServiceInterface?.service!!.isRunning) {
+//            stopService(svcIntent)
+//        }
 
         timingServiceInterface?.unbindService()
     }
 
+    fun getEndTimeStringAfterSecond(sec:Int) :String {
+
+        val format = SimpleDateFormat("hh:mm a", Locale.US)
+        val endCalendar = GregorianCalendar()
+
+        format.calendar = endCalendar
+
+        endCalendar.add(Calendar.SECOND,sec)
+
+        val endTimeString = format.format(endCalendar.time)
+        return endTimeString
+
+
+    }
 
 }

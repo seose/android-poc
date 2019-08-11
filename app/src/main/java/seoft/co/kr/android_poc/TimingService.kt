@@ -104,6 +104,7 @@ class TimingService : Service() {
         "stop".i(TAG)
         cancelTimerStatus()
         isPause = false
+        stopSelf()
         timingService = null
 
         sendBroadcast(Intent(CMD_BRD.STOP))
