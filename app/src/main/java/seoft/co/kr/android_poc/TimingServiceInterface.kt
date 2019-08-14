@@ -59,6 +59,14 @@ class TimingServiceInterface(val ctx: Context) {
         service?.move(pos)
     }
 
+    fun turnRepeat(){
+        service?.turnRepeat()
+    }
+
+    fun getRepeat(){
+        service?.brdIsRepeat()
+    }
+
 
 
 

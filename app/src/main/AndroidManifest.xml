@@ -27,6 +27,7 @@
                 <action android:name="STOP"/>
                 <action android:name="REMAIN_SEC"/>
                 <action android:name="ROUND"/>
+                <action android:name="REPEAT"/>
 
             </intent-filter>
         </service>

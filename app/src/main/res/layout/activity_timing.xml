@@ -61,6 +61,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="add 1minute" />
+    <Button
+        android:id="@+id/btRepeat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="repeat off" />
 
     <LinearLayout
         android:layout_width="match_parent" android:orientation="horizontal"

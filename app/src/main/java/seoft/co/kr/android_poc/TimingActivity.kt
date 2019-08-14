@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_timing.*
 import seoft.co.kr.android_poc.util.i
 import seoft.co.kr.android_poc.util.toTimeStr
+import seoft.co.kr.android_poc.util.toast
 import seoft.co.kr.android_poc.util.x1000L
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,9 +48,10 @@ class TimingActivity : AppCompatActivity() {
         val TIMES = "TIMES"
         val READY_SEC = "READY_SEC"
 
-        var endTimeStr = ""
-        var allTimeStr = ""
-        var addingMinute = 0
+        // TODO : Connect sharedPreference this proerties
+        private var endTimeStr = ""
+        private var allTimeStr = ""
+        private var addingMinute = 0
     }
 
     lateinit var times: ArrayList<Int>
@@ -110,11 +112,25 @@ class TimingActivity : AppCompatActivity() {
                         endTimeStr = getEndTimeStringAfterSecond(remainSecond.toInt())
                         updateEndingView()
                     }
+                    CMD_BRD.UPDATE_REPEAT_BTN -> {
+                        val turn = intent.getBooleanExtra(CMD_BRD.MSG,false)
+                        "CMD_BRD.REPEAT : $turn".i()
+                        updateRepeat(turn)
+                    }
+                    CMD_BRD.UPDATE_REPEAT_CNT -> {
+                        val repeatCnt = intent.getIntExtra(CMD_BRD.MSG,0)
+                        "CMD_BRD.UPDATE_REPEAT_CNT : $repeatCnt".i()
+                        "CMD_BRD.UPDATE_REPEAT_CNT : $repeatCnt".toast()
+                    }
                 }
             }
         }
     }
 
+    fun updateRepeat(turn: Boolean) {
+        if(turn) btRepeat.text = "repeat on"
+        else btRepeat.text = "repeat off"
+    }
 
     fun startServiceFromActivity() {
         svcIntent = Intent(this, TimingService::class.java)
@@ -157,6 +173,9 @@ class TimingActivity : AppCompatActivity() {
         bt4.setOnClickListener {
             moveTimeBadge(2)
         }
+        btRepeat.setOnClickListener {
+            timingServiceInterface?.turnRepeat()
+        }
     }
 
     fun moveTimeBadge(pos:Int){
@@ -195,6 +214,9 @@ class TimingActivity : AppCompatActivity() {
             addAction(CMD_BRD.END)
             addAction(CMD_BRD.STOP)
             addAction(CMD_BRD.REMAIN_SEC)
+            addAction(CMD_BRD.UPDATE_REPEAT_BTN)
+            addAction(CMD_BRD.UPDATE_REPEAT_CNT)
+
         })
 
         canReady = true
@@ -215,6 +237,7 @@ class TimingActivity : AppCompatActivity() {
         tvAllTime.text = allTimeStr
         updateEndingView()
         updateAddingView()
+        timingServiceInterface?.getRepeat()
 
     }
 

@@ -31,9 +31,8 @@ class MainActivity : AppCompatActivity(){
     fun AAA() {
 
         val times = arrayListOf(
-                30,
-                20,
-                20
+                3,
+                3
         )
 
         val readySec = 3

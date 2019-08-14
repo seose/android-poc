@@ -32,6 +32,8 @@ class TimingService : Service() {
 
     val TAG = "TimingService#$#"
 
+    val REPEAT_MAX_COUNT = 99
+
     companion object {
         var timingService: TimingService? = null // check service is alive
     }
@@ -47,6 +49,9 @@ class TimingService : Service() {
     var isRunning = false
     var isPause = false
     var mTimer = 0L // use when restart from pause status
+
+    var isRepeat = false
+    var repeatCnt = 0
 
     val binder = TimingServiceBinder()
 
@@ -101,7 +106,7 @@ class TimingService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun soundOff(){
+    fun soundOff() {
 
     }
 
@@ -122,41 +127,33 @@ class TimingService : Service() {
         "pause".i(TAG)
         cancelTimerStatus(CancleType.NONE)
         isPause = true
-        timingNotification.update(
-                "내타임셋",
-                mTimer.toTimeStr(),
-                arrayCnt.toString(),
-                NotifiactionButtonType.PLAY)
+        updateNotification(mTimer.toTimeStr(), NotifiactionButtonType.PLAY)
     }
 
     fun restart(startType: StartType) {
 
         if (!isRunning && !isPause) timingNotification.showNotification()
 
-        if(startType == StartType.INIT)
+        if (startType == StartType.INIT)
             mTimer = times[0].x1000L()
 
         val sumSecondWithOutMTime = times.drop(arrayCnt).reduce { cur, nxt -> cur + nxt }
 
-        val remainSecond = mTimer/1000 + sumSecondWithOutMTime
+        val remainSecond = mTimer / 1000 + sumSecondWithOutMTime
         sendBroadcast(Intent(CMD_BRD.REMAIN_SEC).apply { putExtra(CMD_BRD.MSG, remainSecond) })
 
         "restart".i(TAG)
         startTimer()
-        timingNotification.update(
-                "내타임셋",
-                mTimer.toTimeStr(),
-                arrayCnt.toString(),
-                NotifiactionButtonType.PAUSE)
+        updateNotification(mTimer.toTimeStr(), NotifiactionButtonType.PAUSE)
     }
 
-    fun addMin(){
+    fun addMin() {
         pause()
         mTimer += 60000
         restart(StartType.RESTART)
     }
 
-    fun move(pos:Int){
+    fun move(pos: Int) {
         arrayCnt = pos
         pause()
         mTimer = times[arrayCnt].x1000L() // set timer picked move
@@ -182,10 +179,18 @@ class TimingService : Service() {
                 isRunning = false
                 arrayCnt++
                 if (arrayCnt == times.size) {
-                    cancelTimerStatus(CancleType.INIT_ARR_CNT)
-                    "sendBroadcast     END".i(TAG)
-                    sendBroadcast(Intent(CMD_BRD.END))
-                    stopSelf()
+                    if (isRepeat && repeatCnt < REPEAT_MAX_COUNT) {
+
+                        move(0)
+                        repeatCnt++
+                        brdRepeatCount()
+                    } else {
+                        cancelTimerStatus(CancleType.INIT_ARR_CNT)
+                        "sendBroadcast     END".i(TAG)
+                        sendBroadcast(Intent(CMD_BRD.END))
+                        stopSelf()
+                    }
+
                 } else {
                     cdt.cancel()
                     startTimer()
@@ -197,13 +202,8 @@ class TimingService : Service() {
                 val time = millisUntilFinished.toTimeStr()
                 "sendBroadcast     millisUntilFinished $millisUntilFinished     time $time".i(TAG)
 
-                broadcastTimeAndRound(time)
-                timingNotification.update(
-                        "내타임셋",
-                        time,
-                        arrayCnt.toString(),
-                        NotifiactionButtonType.PAUSE
-                )
+                brdTimeAndRound(time)
+                updateNotification(time, NotifiactionButtonType.PAUSE)
             }
         }
 
@@ -212,14 +212,25 @@ class TimingService : Service() {
 
     }
 
+    fun updateNotification(time: String, nbType: NotifiactionButtonType) {
+        timingNotification.update(
+                "내타임셋",
+                time,
+                arrayCnt.toString(),
+                times.size.toString(),
+                repeatCnt.toString(),
+                nbType
+        )
+    }
+
     /**
      * call when rejoin activity after out activity
      */
     fun updateActViewNow() {
-        broadcastTimeAndRound(mTimer.toTimeStr())
+        brdTimeAndRound(mTimer.toTimeStr())
     }
 
-    fun broadcastTimeAndRound(timeStr: String) {
+    fun brdTimeAndRound(timeStr: String) {
         sendBroadcast(Intent(CMD_BRD.TIME).apply { putExtra(CMD_BRD.MSG, timeStr) })
         sendBroadcast(Intent(CMD_BRD.ROUND).apply { putExtra(CMD_BRD.MSG, arrayCnt.toString()) })
     }
@@ -227,7 +238,7 @@ class TimingService : Service() {
     /**
      * param [initArrCnt] is called with false value from only pause()
      */
-    fun cancelTimerStatus(/*initArrCnt: Boolean = true*/ cancleType : CancleType) {
+    fun cancelTimerStatus(/*initArrCnt: Boolean = true*/ cancleType: CancleType) {
         cdt.cancel()
         isRunning = false
         if (cancleType == CancleType.INIT_ARR_CNT) {
@@ -244,12 +255,29 @@ class TimingService : Service() {
         timingService = null
     }
 
-    enum class CancleType{
+    fun turnRepeat() {
+        isRepeat = !isRepeat
+        brdIsRepeat()
+    }
+
+    fun brdIsRepeat() {
+        sendBroadcast(Intent(CMD_BRD.UPDATE_REPEAT_BTN).apply { putExtra(CMD_BRD.MSG, isRepeat) })
+    }
+
+    fun brdRepeatCount() {
+        sendBroadcast(Intent(CMD_BRD.UPDATE_REPEAT_CNT).apply { putExtra(CMD_BRD.MSG, repeatCnt) })
+    }
+
+    enum class CancleType {
         NONE,
         INIT_ARR_CNT
     }
 
-    enum class StartType{
+//    추가요구사항 해야됨
+//    반복 ok
+//    초과한타임셋;; 등
+
+    enum class StartType {
         INIT,
         RESTART
     }
