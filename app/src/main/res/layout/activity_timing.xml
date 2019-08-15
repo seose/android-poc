@@ -52,10 +52,10 @@
         android:layout_height="wrap_content"
         android:text="pause" />
     <Button
-        android:id="@+id/btStop"
+        android:id="@+id/btCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="stop" />
+        android:text="cancel" />
     <Button
         android:id="@+id/btAdd"
         android:layout_width="match_parent"

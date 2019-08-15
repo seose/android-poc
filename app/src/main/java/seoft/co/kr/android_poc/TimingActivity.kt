@@ -153,7 +153,7 @@ class TimingActivity : AppCompatActivity() {
         btPause.setOnClickListener {
             TimingService.timingService?.let { timingServiceInterface?.pause() }
         }
-        btStop.setOnClickListener {
+        btCancel.setOnClickListener {
             TimingService.timingService?.let { timingServiceInterface?.stop() }
         }
         btAdd.setOnClickListener {

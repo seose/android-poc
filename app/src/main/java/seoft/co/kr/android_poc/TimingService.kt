@@ -26,6 +26,11 @@ import seoft.co.kr.android_poc.util.x1000L
  * 3. refresh mTimer(current count time set) from move pos, array
  * 4. restart ( with noti, remain sec )
  *
+ * 0814
+ * repeat :
+ * manage related properties : isRepeat, repeatCnt
+ * manage related methods : turnRepeat, brdIsRepeat, brdRepeatCount
+ *
  */
 
 class TimingService : Service() {
@@ -86,11 +91,9 @@ class TimingService : Service() {
                     restart(StartType.INIT)
                 }
                 CMD_SERVICE.PAUSE -> {
-//                    "timerService ${timingService == null}".i()
                     pause()
                 }
                 CMD_SERVICE.RESTART -> {
-//                    "timerService ${timingService == null}".i()
                     restart(StartType.RESTART)
                 }
                 CMD_SERVICE.STOP -> {
@@ -100,8 +103,6 @@ class TimingService : Service() {
                     soundOff()
                 }
             }
-
-
         }
         return super.onStartCommand(intent, flags, startId)
     }
